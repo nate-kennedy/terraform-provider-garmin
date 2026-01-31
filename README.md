@@ -7,7 +7,8 @@ A Terraform/OpenTofu provider for managing Garmin Connect workouts using Infrast
 - **Declarative Workout Management**: Define workouts in HCL and apply with `terraform apply`
 - **Full CRUD Support**: Create, read, update, and delete workouts
 - **Workout Scheduling**: Schedule workouts on specific dates in your Garmin calendar
-- **Strength Training Focus**: Comprehensive support for strength training exercises
+- **Running Workouts**: Intervals, tempo runs, long runs with pace targets
+- **Strength Training**: Comprehensive support for strength training exercises
 - **State Management**: Terraform tracks your workouts and handles updates automatically
 
 ## Requirements
@@ -79,6 +80,112 @@ provider "garmin" {
 | `garth_home` | `GARTH_HOME` | `~/.garth` | Path to garth token directory |
 
 ## Usage
+
+### Running Workouts
+
+The `garmin_running_workout` resource supports structured running workouts with pace targets.
+
+#### Easy Run
+
+```hcl
+resource "garmin_running_workout" "easy_run" {
+  name        = "Easy 5 Miler"
+  description = "Recovery or base-building run"
+
+  step {
+    type           = "interval"
+    distance_miles = 5.0
+    pace_per_mile  = "9:00-9:30"
+  }
+}
+```
+
+#### Interval Workout
+
+```hcl
+resource "garmin_running_workout" "intervals" {
+  name        = "6 x 800m Intervals"
+  description = "Speed workout with recovery jogs"
+
+  warmup {
+    distance_miles = 1.0
+    pace_per_mile  = "8:30-9:30"
+  }
+
+  repeat {
+    count              = 6
+    skip_last_recovery = true
+
+    interval {
+      distance_meters = 800
+      pace_per_mile   = "6:15-6:35"
+    }
+
+    recovery {
+      duration_seconds = 180
+    }
+  }
+
+  cooldown {
+    distance_miles = 1.0
+    pace_per_mile  = "8:30-9:30"
+  }
+}
+```
+
+#### Tempo Run
+
+```hcl
+resource "garmin_running_workout" "tempo" {
+  name        = "3 Mile Tempo"
+  description = "Lactate threshold workout"
+
+  warmup {
+    distance_miles = 1.0
+    pace_per_mile  = "9:00-9:30"
+  }
+
+  step {
+    type           = "interval"
+    distance_miles = 3.0
+    pace_per_mile  = "7:15-7:30"
+  }
+
+  cooldown {
+    distance_miles = 1.0
+    pace_per_mile  = "9:00-9:30"
+  }
+}
+```
+
+#### Long Run with Progressive Pace
+
+```hcl
+resource "garmin_running_workout" "long_run" {
+  name        = "Long Run with Fast Finish"
+  description = "12-mile long run progressing to marathon pace"
+
+  step {
+    type           = "interval"
+    distance_miles = 8.0
+    pace_per_mile  = "8:45-9:15"
+  }
+
+  step {
+    type           = "interval"
+    distance_miles = 2.0
+    pace_per_mile  = "8:00-8:30"
+  }
+
+  step {
+    type           = "interval"
+    distance_miles = 2.0
+    pace_per_mile  = "7:30-7:45"
+  }
+}
+```
+
+### Strength Workouts
 
 ### Basic Workout
 
@@ -228,7 +335,8 @@ terraform destroy
 See the [examples](./examples) directory for:
 
 - [Provider configuration](./examples/provider/)
-- [Single workout examples](./examples/resources/garmin_workout/)
+- [Running workout examples](./examples/resources/garmin_running_workout/)
+- [Strength workout examples](./examples/resources/garmin_workout/)
 - [Full marathon strength program](./examples/marathon-program/)
 
 ## Limitations
